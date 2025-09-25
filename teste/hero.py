@@ -75,6 +75,9 @@ class Hero:
             self.invincible_timer = INVINCIBILITY_TIME
 
     def draw(self, offset_x=0, offset_y=0):
+        # Pisca ao levar dano
+        if self.invincible_timer > 0 and (self.invincible_timer // 3) % 2 == 0:
+            return  # não desenha, piscando
         self.actor.x = self.rect.centerx + offset_x
         self.actor.y = self.rect.centery + offset_y
         self.actor.draw()
