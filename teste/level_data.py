@@ -41,6 +41,38 @@ platforms = [
     {"rect": Rect(2350, 700, 500, 50), "texture": "platform1"},
     {"rect": Rect(2350, 750, 500, 50), "texture": "platform1"},
 
+    #parkour
+    {"rect": Rect(3000, 600, 80, 50), "texture": "plant"},
+    {"rect": Rect(3200, 650, 80, 50), "texture": "plant"},
+    {"rect": Rect(3400, 700, 80, 50), "texture": "plant"},
+    {"rect": Rect(3600, 750, 80, 50), "texture": "plant"},
+    {"rect": Rect(3800, 850, 80, 50), "texture": "plant"},
+    {"rect": Rect(4000, 900, 80, 50), "texture": "plant"},
+    {"rect": Rect(4200, 950, 80, 50), "texture": "plant"},
+    {"rect": Rect(4400, 1000, 80, 50), "texture": "plant"},
+    {"rect": Rect(4600, 1050, 80, 50), "texture": "plant"},
+    {"rect": Rect(4800, 1000, 80, 50), "texture": "plant"},
+    {"rect": Rect(5000, 950, 80, 50), "texture": "plant"},
+    {"rect": Rect(5200, 900, 80, 50), "texture": "plant"},
+    {"rect": Rect(5400, 850, 80, 50), "texture": "plant"},
+    {"rect": Rect(5600, 800, 80, 50), "texture": "plant"},
+    {"rect": Rect(5800, 750, 80, 50), "texture": "plant"},
+    {"rect": Rect(6000, 700, 80, 50), "texture": "plant"},
+    {"rect": Rect(6200, 650, 80, 50), "texture": "plant"},
+    {"rect": Rect(6400, 600, 80, 50), "texture": "plant"},
+    {"rect": Rect(6600, 550, 80, 50), "texture": "plant"},
+
+    #parte 6
+    {"rect": Rect(6700, 550, 1050, 50), "texture": "floor"},
+    {"rect": Rect(6700, 600, 1050, 50), "texture": "floor"},
+    {"rect": Rect(6700, 650, 1050, 50), "texture": "floor"},
+    {"rect": Rect(6700, 700, 1050, 50), "texture": "floor"},
+    {"rect": Rect(6700, 750, 1050, 50), "texture": "floor"},
+    {"rect": Rect(6700, 800, 1050, 50), "texture": "floor"},
+    {"rect": Rect(6700, 850, 1050, 50), "texture": "floor"},
+ 
+    #final
+    {"rect": Rect(7850, 550, 300, 50), "texture": "floor"},
     # Plataformas manuais
     {"rect": Rect(100, 400, 150, 20), "texture": "plant"},
     {"rect": Rect(350, 400, 150, 20), "texture": "platform2"},
@@ -54,7 +86,18 @@ platforms = [
 enemies = [
     {"pos": (500, 500), "patrol": (450, 700)},
     {"pos": (250, 400), "patrol": (200, 350)},
+    {"pos": (800, 400), "patrol": (750, 1600)},
+    {"pos": (850, 400), "patrol": (800, 1600)},
+    {"pos": (900, 400), "patrol": (850, 1600)},
+    {"pos": (950, 400), "patrol": (900, 1600)},
+    {"pos": (1000, 400), "patrol": (950, 1600)},
+    {"pos": (1050, 400), "patrol": (1000, 1600)},
     {"pos": (350, 400), "patrol": (300, 500)},
     {"pos": (1950, 400), "patrol": (1900, 2200)},
+    {"pos": (6750, 400), "patrol": (6700, 7750)},
+    {"pos": (6950, 400), "patrol": (6700, 7750)},
+    {"pos": (7150, 400), "patrol": (6700, 7750)},
+    {"pos": (7350, 400), "patrol": (6700, 7750)},
+    {"pos": (7550, 400), "patrol": (6700, 7750)},
+    {"pos": (7750, 400), "patrol": (6700, 7750)},
 ]
-
