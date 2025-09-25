@@ -12,6 +12,7 @@ platforms = [
     {"rect": Rect(0, 700, 800, 50), "texture": "floor"},
     {"rect": Rect(0, 750, 800, 50), "texture": "floor"},
     {"rect": Rect(0, 800, 800, 50), "texture": "floor"},
+    
     #quando começa,altura do bloor ,onde termina,latitude
     {"rect": Rect(800, 550, 1800, 50), "texture": "platform1"},
     {"rect": Rect(800, 600, 1800, 50), "texture": "platform1"},

@@ -1,5 +1,5 @@
 import pgzrun
-from config import WIDTH, HEIGHT, FLOOR_HEIGHT
+from config import WIDTH, HEIGHT
 from hero import Hero
 from enemy import Enemy
 from menu import Menu
@@ -18,18 +18,17 @@ class Game:
 
     def start_game(self):
         self.state = "GAME"
-
-        # Carrega plataformas e inimigos
         self.platforms = [plat.copy() for plat in level_platforms]
         self.enemies = [Enemy(e["pos"], e["patrol"]) for e in level_enemies]
 
-        # Jogador
+        if not self.platforms:
+            return  # evita crash se não houver plataformas
+
         floor_rect = self.platforms[0]["rect"]
         self.player = Hero((150, floor_rect.top - 50))
         self.player.lives = 5
         self.player.rect.bottom = floor_rect.top
 
-        # Posicionar inimigos no chão
         for enemy in self.enemies:
             enemy.rect.bottom = floor_rect.top
 
@@ -49,7 +48,6 @@ class Game:
         if self.invincible_timer > 0:
             self.invincible_timer -= 1
 
-        # Colisão com inimigos
         if self.invincible_timer <= 0:
             for enemy in self.enemies:
                 if self.player.rect.colliderect(enemy.rect):
@@ -65,7 +63,7 @@ class Game:
         if self.player.lives <= 0:
             self.state = "MENU"
 
-        # Atualiza câmera: segue o jogador horizontal e verticalmente
+        # Câmera segue o jogador
         self.camera_x = self.player.rect.centerx - WIDTH // 2
         self.camera_y = self.player.rect.centery - HEIGHT // 2
 
@@ -74,25 +72,30 @@ class Game:
             self.menu.draw(screen)
             return
 
-        screen.clear()
+        # --- Fundo infinito/tiled ---
+        bg_width = images.background.get_width()
+        bg_height = images.background.get_height()
+        tiles_x = (WIDTH // bg_width) + 2
+        tiles_y = (HEIGHT // bg_height) + 2
+
+        for i in range(tiles_x):
+            for j in range(tiles_y):
+                x = (i * bg_width) - (self.camera_x % bg_width)
+                y = (j * bg_height) - (self.camera_y % bg_height)
+                screen.blit("background3", (x, y))
+
+        # Calcula offset da câmera
         offset_x = -self.camera_x
         offset_y = -self.camera_y
 
-        bg = images.background
-    # repete ou apenas desenha a imagem, ajustando à câmera
-        screen.blit("background", (offset_x, offset_y))
-    
-        # Desenha plataformas e chão com repetição de textura
+        # Plataformas
         for plat_data in self.platforms:
             rect = plat_data["rect"]
             texture_name = plat_data["texture"]
             img = getattr(images, texture_name)
             img_width = img.get_width()
-
-            start_x = rect.x
-            end_x = rect.x + rect.width
-            x = start_x
-            while x < end_x:
+            x = rect.x
+            while x < rect.x + rect.width:
                 screen.blit(texture_name, (x + offset_x, rect.y + offset_y))
                 x += img_width
 
