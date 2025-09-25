@@ -12,8 +12,12 @@ platforms = [
     {"rect": Rect(0, 700, 800, 50), "texture": "floor"},
     {"rect": Rect(0, 750, 800, 50), "texture": "floor"},
     {"rect": Rect(0, 800, 800, 50), "texture": "floor"},
-    {"rect": Rect(0, 850, 800, 50), "texture": "floor"},#quando começa,altura do bloor ,onde termina,latitude
-    {"rect": Rect(800, 550, 1000, 50), "texture": "platform1"},
+    #quando começa,altura do bloor ,onde termina,latitude
+    {"rect": Rect(800, 550, 1800, 50), "texture": "platform1"},
+    {"rect": Rect(800, 600, 1800, 50), "texture": "platform1"},
+    {"rect": Rect(800, 650, 1800, 50), "texture": "platform1"},
+    {"rect": Rect(800, 700, 1800, 50), "texture": "platform1"},
+    {"rect": Rect(800, 750, 1800, 50), "texture": "platform1"},
     # Plataformas manuais
     {"rect": Rect(100, 400, 150, 20), "texture": "plant"},
     {"rect": Rect(350, 400, 200, 20), "texture": "platform2"},
