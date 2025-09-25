@@ -29,6 +29,7 @@ platforms = [
 
 # Inimigos
 enemies = [
-    {"pos": (500, 500), "patrol": (450, 700)},
-    {"pos": (250, 400), "patrol": (200, 350)}
+    {"pos": (200, 500), "platform_index": 1, "patrol": (300, 2500)},  # inimigo 1 na plataforma 1
+    {"pos": (400, 0), "platform_index": 2, "patrol": (400, 550)},  # inimigo 2 na plataforma 2
+    {"pos": (700, 0), "platform_index": 3, "patrol": (700, 850)},  # inimigo 3 na plataforma 3
 ]

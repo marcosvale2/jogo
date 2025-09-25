@@ -6,6 +6,7 @@ from menu import Menu
 from level_data import platforms as level_platforms, enemies as level_enemies
 from pygame import Rect
 
+
 class Game:
     def __init__(self):
         self.state = "MENU"
@@ -19,18 +20,30 @@ class Game:
     def start_game(self):
         self.state = "GAME"
         self.platforms = [plat.copy() for plat in level_platforms]
-        self.enemies = [Enemy(e["pos"], e["patrol"]) for e in level_enemies]
+        self.enemies = [Enemy(e["pos"], e.get("patrol", (0, 0))) for e in level_enemies]
 
         if not self.platforms:
             return  # evita crash se não houver plataformas
 
+        # --- Jogador ---
         floor_rect = self.platforms[0]["rect"]
         self.player = Hero((150, floor_rect.top - 50))
         self.player.lives = 5
         self.player.rect.bottom = floor_rect.top
 
-        for enemy in self.enemies:
-            enemy.rect.bottom = floor_rect.top
+        # --- Inimigos ---
+        for enemy, enemy_data in zip(self.enemies, level_enemies):
+            plat_index = enemy_data.get("platform_index", 0)  # padrão: chão
+            plat_rect = self.platforms[plat_index]["rect"]
+            
+            # Define posição horizontal inicial
+            enemy.rect.centerx = enemy_data["pos"][0]
+            
+            # Define posição vertical sobre a plataforma
+            enemy.rect.bottom = plat_rect.top
+            
+            # Define patrulha individual ou usa os limites da plataforma
+            enemy.patrol = enemy_data.get("patrol", (plat_rect.left, plat_rect.right))
 
         self.invincible_timer = 0
         self.camera_x = 0
@@ -84,7 +97,7 @@ class Game:
                 y = (j * bg_height) - (self.camera_y % bg_height)
                 screen.blit("background3", (x, y))
 
-        # Calcula offset da câmera
+        # Offset da câmera
         offset_x = -self.camera_x
         offset_y = -self.camera_y
 
