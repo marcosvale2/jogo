@@ -124,4 +124,3 @@ def on_mouse_down(pos):
     game.on_mouse_down(pos)
 
 pgzrun.go()
- #j121qw
