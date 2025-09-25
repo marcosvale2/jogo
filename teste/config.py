@@ -1,0 +1,10 @@
+WIDTH = 800
+HEIGHT = 600
+TITLE = "Meu Jogo Incrível"
+
+GRAVITY = 0.5
+PLAYER_SPEED = 3
+JUMP_STRENGTH = 10
+INVINCIBILITY_TIME = 60  # frames de invencibilidade
+
+FLOOR_HEIGHT = 50
