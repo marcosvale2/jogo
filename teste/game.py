@@ -78,6 +78,10 @@ class Game:
         offset_x = -self.camera_x
         offset_y = -self.camera_y
 
+        bg = images.background
+    # repete ou apenas desenha a imagem, ajustando à câmera
+        screen.blit("background", (offset_x, offset_y))
+    
         # Desenha plataformas e chão com repetição de textura
         for plat_data in self.platforms:
             rect = plat_data["rect"]
