@@ -3,7 +3,7 @@ from pygame import Rect
 from config import GRAVITY
 
 class Enemy:
-    def __init__(self, start_pos, patrol_range):
+    def __init__(self, start_pos, patrol_range, speed=2.0):
         self.animations = {
             "run_right": ["enemy_run_right_1", "enemy_run_right_2", "enemy_run_right_3", "enemy_run_right_4"],
             "run_left": ["enemy_run_left_1", "enemy_run_left_2", "enemy_run_left_3", "enemy_run_left_4"]
@@ -14,26 +14,31 @@ class Enemy:
 
         self.actor = Actor(self.animations[self.current_animation][0], pos=start_pos)
 
-        self.vx = 2
+        self.vx = speed  # usa a velocidade individual
+        self.speed = speed
         self.vy = 0
         self.patrol_range = patrol_range
-        self.rect = Rect(self.actor.x - 15, self.actor.y - 15, 15, 15)
+        self.rect = Rect(self.actor.x - 15, self.actor.y - 15, 30, 30)
 
     def update(self, platforms):
+        # Movimento horizontal dentro da área de patrulha
         self.rect.x += self.vx
         if self.rect.left < self.patrol_range[0] or self.rect.right > self.patrol_range[1]:
             self.vx *= -1
             self.current_animation = "run_left" if self.vx < 0 else "run_right"
 
+        # Gravidade
         self.vy += GRAVITY
         self.rect.y += self.vy
 
+        # Colisão com plataformas
         for plat_data in platforms:
             plat = plat_data["rect"]
             if self.rect.colliderect(plat) and self.vy >= 0:
                 self.rect.bottom = plat.top
                 self.vy = 0
 
+        # Atualiza actor
         self.actor.x = self.rect.centerx
         self.actor.y = self.rect.centery
 

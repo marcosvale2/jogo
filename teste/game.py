@@ -5,7 +5,7 @@ from enemy import Enemy
 from menu import Menu
 from level_data import platforms as level_platforms, enemies as level_enemies
 from pygame import Rect
-
+from level_data import enemies as level_enemies
 
 class Game:
     def __init__(self):
@@ -30,7 +30,10 @@ class Game:
         self.player = Hero((150, floor_rect.top - 50))
         self.player.lives = 5
         self.player.rect.bottom = floor_rect.top
-
+        
+        self.enemies = [
+          Enemy(e["pos"], e["patrol"], speed=e.get("speed", 2.0))
+           for e in level_enemies]
         # --- Inimigos ---
         for enemy, enemy_data in zip(self.enemies, level_enemies):
             plat_index = enemy_data.get("platform_index", 0)  # padrão: chão
