@@ -5,6 +5,8 @@ from enemy import Enemy
 from menu import Menu
 from level_data import platforms as level_platforms, enemies as level_enemies
 from pygame import Rect
+import time
+
 
 class Game:
     def __init__(self):
@@ -22,15 +24,14 @@ class Game:
         self.enemies = [Enemy(e["pos"], e["patrol"], e.get("speed", 2)) for e in level_enemies]
 
         if not self.platforms:
-            return  # evita crash se não houver plataformas
+            return
 
-        # Inicializa jogador
         floor_rect = self.platforms[0]["rect"]
         self.player = Hero((150, floor_rect.top - 50))
         self.player.lives = 5
         self.player.rect.bottom = floor_rect.top
 
-        # Posicionar inimigos no chão ou plataformas
+        # Posicionar inimigos nas plataformas
         for enemy, e_data in zip(self.enemies, level_enemies):
             plat_idx = e_data.get("platform_index", None)
             if plat_idx is not None:
@@ -48,21 +49,32 @@ class Game:
             return
 
         self.player.update(self.platforms, keys)
+
+        # Atualiza inimigos
         for enemy in self.enemies:
-            enemy.update(self.platforms)
+            enemy.update(self.platforms, self.enemies)
 
-        # Colisão com inimigos
-        if self.player.invincible_timer <= 0:
-            for enemy in self.enemies:
-                if self.player.rect.colliderect(enemy.rect):
+        # Colisão jogador x inimigos
+        for enemy in self.enemies:
+            if self.player.rect.colliderect(enemy.rect):
+                if self.player.attacking:
+                    direction = "right" if self.player.direction == "right" else "left"
+                    enemy.take_hit(direction)
+                elif self.player.invincible_timer <= 0:
                     self.player.take_damage()
-                    break
 
-        # Game over
+        # Remove inimigos mortos
+        self.enemies = [e for e in self.enemies if not getattr(e, "kill", False)]
+
+        # Checa se o jogador caiu fora da tela
+        if self.player.rect.top > HEIGHT + 100:
+            self.state = "MENU"
+            return
+
         if self.player.lives <= 0:
             self.state = "MENU"
 
-        # Câmera segue o jogador
+        # Atualizar câmera
         self.camera_x = self.player.rect.centerx - WIDTH // 2
         self.camera_y = self.player.rect.centery - HEIGHT // 2
 
@@ -71,12 +83,11 @@ class Game:
             self.menu.draw(screen)
             return
 
-        # Fundo infinito/tiled
-        bg_width = images.background.get_width()
-        bg_height = images.background.get_height()
+        # Fundo
+        bg_width = 800
+        bg_height = 600
         tiles_x = (WIDTH // bg_width) + 2
         tiles_y = (HEIGHT // bg_height) + 2
-
         for i in range(tiles_x):
             for j in range(tiles_y):
                 x = (i * bg_width) - (self.camera_x % bg_width)
@@ -114,18 +125,24 @@ class Game:
                 self.start_game()
             elif action == "exit":
                 quit()
+            elif action == "music_toggle":
+                pass  # Implementação de som depois
 
 
-# Inicializa jogo
+# --- Inicialização do jogo ---
 game = Game()
+
 
 def draw():
     game.draw(screen)
 
+
 def update():
     game.update(keyboard)
 
+
 def on_mouse_down(pos):
     game.on_mouse_down(pos)
+
 
 pgzrun.go()

@@ -1,123 +1,135 @@
 from pygame import Rect
-import random
-# Cada plataforma ou chão pode ter um "tipo" de textura
-# "floor" = chão, "grass", "stone", "wood" = plataformas
-# Cada item: {"rect": Rect(...), "texture": "nome_da_imagem"}
 
-platforms = [
-    # Chão inicial
-    {"rect": Rect(-800, 550, 1600, 50), "texture": "floor"},
-    {"rect": Rect(-800, 600, 1600, 50), "texture": "floor"},
-    {"rect": Rect(-800, 650, 1600, 50), "texture": "floor"},
-    {"rect": Rect(-800, 700, 1600, 50), "texture": "floor"},
-    {"rect": Rect(-800, 750, 1600, 50), "texture": "floor"},
-    {"rect": Rect(-800, 800, 1600, 50), "texture": "floor"},
-    # quando começa,altura do bloor ,onde termina,latitude
-    {"rect": Rect(800, 550, 800, 50), "texture": "platform1"},
-    {"rect": Rect(800, 600, 800, 50), "texture": "platform1"},
-    {"rect": Rect(800, 650, 800, 50), "texture": "platform1"},
-    {"rect": Rect(800, 700, 800, 50), "texture": "platform1"},
-    {"rect": Rect(800, 750, 800, 50), "texture": "platform1"},
+# --- Textures ---
+ground_textures_anim = ["ground/floor_bw_d1", "ground/floor_bw_d2", "ground/floor_bw_d3", "ground/floor_bw_d4", "ground/floor_bw_d5"]
+ground_texture_fixed = "ground/floor_bwg_d"  # textura padrão para chão e plataformas encostadas
+vertical_textures = ["ground/floor_bw_dd", "ground/floor_bw_dd2", "ground/floor_bw_dd3", "ground/floor_bw_dd4"]
 
-    # buraco
-    # parte 3
-    {"rect": Rect(1150, 550, 500, 50), "texture": "platform1"},
-    {"rect": Rect(1150, 600, 500, 50), "texture": "platform1"},
-    {"rect": Rect(1150, 650, 500, 50), "texture": "platform1"},
-    {"rect": Rect(1150, 700, 500, 50), "texture": "platform1"},
-    {"rect": Rect(1150, 750, 500, 50), "texture": "platform1"},
+platforms = []
 
-    # parte 4
-    {"rect": Rect(1900, 550, 300, 50), "texture": "platform1"},
-    {"rect": Rect(1900, 600, 300, 50), "texture": "platform1"},
-    {"rect": Rect(1900, 650, 300, 50), "texture": "platform1"},
-    {"rect": Rect(1900, 700, 300, 50), "texture": "platform1"},
-    {"rect": Rect(1900, 750, 300, 50), "texture": "platform1"},
+def add_ground_block(x, y, width=50, height=50, animated=False):
+    if animated:
+        index = (x // 50) % len(ground_textures_anim)
+        texture = ground_textures_anim[index]
+    else:
+        texture = ground_texture_fixed
+    return {"rect": Rect(x, y, width, height), "texture": texture}
 
-    # parte 5
-    {"rect": Rect(2350, 550, 500, 50), "texture": "platform1"},
-    {"rect": Rect(2350, 600, 500, 50), "texture": "platform1"},
-    {"rect": Rect(2350, 650, 500, 50), "texture": "platform1"},
-    {"rect": Rect(2350, 700, 500, 50), "texture": "platform1"},
-    {"rect": Rect(2350, 750, 500, 50), "texture": "platform1"},
+# =====================
+# AREA 1 – START
+# =====================
+# Chão principal (não animado)
+for x in range(-200, 800, 50):
+    platforms.append(add_ground_block(x, 550, 50, 50, animated=False))
 
-    # parkour
-    {"rect": Rect(3000, 600, 80, 50), "texture": "plant"},
-    {"rect": Rect(3200, 650, 80, 50), "texture": "plant"},
-    {"rect": Rect(3400, 700, 80, 50), "texture": "plant"},
-    {"rect": Rect(3600, 750, 80, 50), "texture": "plant"},
-    {"rect": Rect(3800, 850, 80, 50), "texture": "plant"},
-    {"rect": Rect(4000, 900, 80, 50), "texture": "plant"},
-    {"rect": Rect(4200, 950, 80, 50), "texture": "plant"},
-    {"rect": Rect(4400, 1000, 80, 50), "texture": "plant"},
-    {"rect": Rect(4600, 1050, 80, 50), "texture": "plant"},
-    {"rect": Rect(4800, 1000, 80, 50), "texture": "plant"},
-    {"rect": Rect(5000, 950, 80, 50), "texture": "plant"},
-    {"rect": Rect(5200, 900, 80, 50), "texture": "plant"},
-    {"rect": Rect(5400, 850, 80, 50), "texture": "plant"},
-    {"rect": Rect(5600, 800, 80, 50), "texture": "plant"},
-    {"rect": Rect(5800, 750, 80, 50), "texture": "plant"},
-    {"rect": Rect(6000, 700, 80, 50), "texture": "plant"},
-    {"rect": Rect(6200, 650, 80, 50), "texture": "plant"},
-    {"rect": Rect(6400, 600, 80, 50), "texture": "plant"},
-    {"rect": Rect(6600, 550, 80, 50), "texture": "plant"},
-
-    # parte 6
-    {"rect": Rect(6700, 550, 1050, 50), "texture": "floor"},
-    {"rect": Rect(6700, 600, 1050, 50), "texture": "floor"},
-    {"rect": Rect(6700, 650, 1050, 50), "texture": "floor"},
-    {"rect": Rect(6700, 700, 1050, 50), "texture": "floor"},
-    {"rect": Rect(6700, 750, 1050, 50), "texture": "floor"},
-    {"rect": Rect(6700, 800, 1050, 50), "texture": "floor"},
-    {"rect": Rect(6700, 850, 1050, 50), "texture": "floor"},
-
-    # final
-    {"rect": Rect(7850, 550, 300, 50), "texture": "floor"},
-    # Plataformas manuais
-    {"rect": Rect(100, 400, 150, 20), "texture": "plant"},
-    {"rect": Rect(350, 400, 150, 20), "texture": "platform2"},
-    {"rect": Rect(650, 350, 150, 20), "texture": "floor"},
-    {"rect": Rect(900, 300, 200, 20), "texture": "platform1"},
-    {"rect": Rect(1200, 400, 150, 20), "texture": "platform2"},
-    {"rect": Rect(1450, 300, 250, 20), "texture": "platform2"},
+# Plataformas soltas (animadas)
+platforms += [
+    add_ground_block(200, 450, 150, 20, animated=True),
+    add_ground_block(450, 400, 150, 20, animated=True),
+    add_ground_block(700, 350, 150, 20, animated=True),
+    add_ground_block(950, 300, 200, 20, animated=True),
 ]
 
-enemies = []
-
-# Escolhe algumas plataformas elevadas (y < 550 e largura >= 200)
-platform_indices = [
-    i for i, plat in enumerate(platforms)
-    if plat["rect"].y < 550 and plat["rect"].width >= 200
+enemies = [
+    {"pos": (300, 0), "patrol": (200, 400), "speed": 2.0},
+    {"pos": (500, 0), "patrol": (450, 600), "speed": 1.8},
 ]
 
-# Sorteia plataformas que terão inimigos
-random.shuffle(platform_indices)
-chosen_platforms = platform_indices[:min(6, len(platform_indices))]  # no máx 6
+# =====================
+# AREA 2 – CAVE
+# =====================
+for x in range(1300, 2000, 50):
+    platforms.append(add_ground_block(x, 550, 50, 50, animated=False))  # chão
 
-for plat_index in chosen_platforms:
-    plat_rect = platforms[plat_index]["rect"]
-    x_pos = random.randint(plat_rect.left + 30, plat_rect.right - 30)
-    patrol_start = plat_rect.left + 20
-    patrol_end = plat_rect.right - 20
-    enemies.append({
-        "pos": (x_pos, 0),
-        "platform_index": plat_index,
-        "patrol": (patrol_start, patrol_end),
-        "speed": random.uniform(1.0, 1.5)  # mais lentos
-    })
+# Camada subterrânea (caverna)
+for x in range(1000, 2000, 50):
+    platforms.append(add_ground_block(x, 700, 50, 50, animated=False))
 
-# --- Inimigos fixos no chão (sempre aparecem) ---
-ground_rects = [
-    p["rect"] for p in platforms if p["rect"].y >= 550
+platforms += [
+    add_ground_block(1100, 650, 150, 20, animated=True),
+    add_ground_block(1400, 600, 150, 20, animated=True),
+    add_ground_block(1700, 650, 150, 20, animated=True),
 ]
 
-if ground_rects:
-    ground = ground_rects[0]  # chão inicial
-    ground_positions = [200, 600, 1000, 1500, 2000, 2600, 3300, 4000, 4700, 5300, 6000, 7000]
-    for gx in ground_positions:
-        patrol_range = (gx - 150, gx + 150)
-        enemies.append({
-            "pos": (gx, 0),
-            "patrol": patrol_range,
-            "speed": random.uniform(2.0, 3.0)
+enemies += [
+    {"pos": (1200, 0), "patrol": (1100, 1300), "speed": 1.2},
+    {"pos": (1600, 0), "patrol": (1500, 1700), "speed": 1.5},
+]
+
+# =====================
+# AREA 3 – TOWER
+# =====================
+for x in range(2100, 2500, 50):
+    platforms.append(add_ground_block(x, 550, 50, 50, animated=False))  # chão base
+
+# Plataformas laterais soltas
+platforms += [
+    add_ground_block(2200, 500, 100, 20, animated=True),
+    add_ground_block(2300, 450, 100, 20, animated=True),
+    add_ground_block(2400, 400, 100, 20, animated=True),
+    add_ground_block(2300, 350, 100, 20, animated=True),
+    add_ground_block(2200, 300, 100, 20, animated=True),
+    add_ground_block(2100, 250, 100, 20, animated=True),
+]
+
+# Topo da torre
+for x in range(2000, 2600, 50):
+    platforms.append(add_ground_block(x, 200, 50, 50, animated=False))
+
+enemies.append({"pos": (2300, 0), "patrol": (2100, 2500), "speed": 2.5})
+
+# =====================
+# AREA 4 – PLAIN
+# =====================
+for x in range(2700, 3700, 50):
+    platforms.append(add_ground_block(x, 550, 50, 50, animated=False))  # chão
+
+# Obstáculos soltos
+platforms += [
+    add_ground_block(2800, 500, 100, 20, animated=True),
+    add_ground_block(3100, 450, 100, 20, animated=True),
+    add_ground_block(3400, 500, 100, 20, animated=True),
+]
+
+enemies += [
+    {"pos": (2900, 0), "patrol": (2800, 3000), "speed": 2.2},
+    {"pos": (3200, 0), "patrol": (3100, 3300), "speed": 2.0},
+]
+
+# =====================
+# AREA 5 – MOUNTAIN
+# =====================
+for x in range(3800, 4500, 50):
+    y = 550 - ((x - 3800) // 50) * 25
+    platforms.append(add_ground_block(x, y, 50, 50, animated=False))  # subida montanha
+
+# Topo da montanha
+for x in range(4500, 5200, 50):
+    platforms.append(add_ground_block(x, 200, 50, 50, animated=False))
+
+# Plataformas suspensas soltas
+platforms += [
+    add_ground_block(4700, 150, 150, 20, animated=True),
+    add_ground_block(5000, 100, 150, 20, animated=True),
+]
+
+enemies += [
+    {"pos": (4800, 0), "patrol": (4700, 5000), "speed": 2.0},
+    {"pos": (5050, 0), "patrol": (5000, 5200), "speed": 1.8},
+]
+
+# =====================
+# VERTICAL LAYERS DO CHÃO
+# =====================
+block_width = 80
+layer_height = 50
+ground_blocks = [b for b in platforms if b["rect"].y == 550]
+
+for block in ground_blocks:
+    x_start = block["rect"].x
+    for layer_index, texture in enumerate(vertical_textures):
+        y = 600 + layer_index * layer_height
+        platforms.append({
+            "rect": Rect(x_start, y, block_width, layer_height),
+            "texture": texture
         })
