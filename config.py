@@ -1,3 +1,4 @@
+# config.py
 WIDTH = 1200
 HEIGHT = 720
 TITLE = "My Awesome Game"
@@ -5,6 +6,4 @@ TITLE = "My Awesome Game"
 GRAVITY = 0.5
 PLAYER_SPEED = 3
 JUMP_STRENGTH = 12
-INVINCIBILITY_TIME = 60  # frames of invincibility
-
-FLOOR_HEIGHT = 50
+INVINCIBILITY_TIME = 60  # frames

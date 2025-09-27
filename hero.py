@@ -184,9 +184,9 @@ class Hero:
             # Movimento horizontal no ar durante ataque
             if not self.on_ground:
                 if keys.left:
-                    self.vx = -PLAYER_SPEED
                     self.direction = "left"
                 elif keys.right:
+                    self.vx = -PLAYER_SPEED
                     self.vx = PLAYER_SPEED
                     self.direction = "right"
 
