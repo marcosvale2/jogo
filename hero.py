@@ -19,6 +19,8 @@ class Hero:
             "idle_turbo_right": [f"player/transform/idle_turbo_right_{i}" for i in range(1, 7)],
             "attack_left": [f"player/player_attack_left_{i}" for i in range(1, 3)],
             "attack_right": [f"player/player_attack_right_{i}" for i in range(1, 3)],
+            "attack_turbo_left": [f"player/transform/attack_turbo_left_{i}" for i in range(1, 3)],
+            "attack_turbo_right": [f"player/transform/attack_turbo_right_{i}" for i in range(1, 3)],
         }
         self.current_animation = "idle"
         self.frame_index = 0
@@ -92,13 +94,16 @@ class Hero:
             if keys.left:
                 self.vx = -speed
                 self.direction = "left"
-                self.set_animation("run_fast_left")
+                if not self.attacking:
+                    self.set_animation("run_fast_left")
             elif keys.right:
                 self.vx = speed
                 self.direction = "right"
-                self.set_animation("run_fast_right")
+                if not self.attacking:
+                    self.set_animation("run_fast_right")
             else:
-                self.set_animation(f"idle_turbo_{self.direction}")
+                if not self.attacking:
+                    self.set_animation(f"idle_turbo_{self.direction}")
 
             if keys.space and self.on_ground:
                 self.vy = -JUMP_STRENGTH
@@ -157,7 +162,13 @@ class Hero:
             self.attacking = True
             self.attack_frame_index = 0
             self.attack_timer = 0
-            self.set_animation(f"attack_{self.direction}")
+
+            # Escolhe animação de ataque dependendo do estado
+            if self.state in ["transform", "turbo"]:
+                self.set_animation(f"attack_turbo_{self.direction}")
+            else:
+                self.set_animation(f"attack_{self.direction}")
+
             try:
                 sounds.attack.play()
             except:
@@ -168,9 +179,9 @@ class Hero:
             if self.attack_timer >= 5:
                 self.attack_timer = 0
                 self.attack_frame_index += 1
-                if self.attack_frame_index >= len(self.animations[f"attack_{self.direction}"]):
+                if self.attack_frame_index >= len(self.animations[self.current_animation]):
                     self.attacking = False
-                    # Volta para a animação normal
+                    # Volta para animação normal
                     if self.state == "normal":
                         if self.vx == 0:
                             self.set_animation("idle")
@@ -179,16 +190,7 @@ class Hero:
                     elif self.state == "turbo":
                         self.set_animation(f"idle_turbo_{self.direction}")
                 else:
-                    self.actor.image = self.animations[f"attack_{self.direction}"][self.attack_frame_index]
-
-            # Movimento horizontal no ar durante ataque
-            if not self.on_ground:
-                if keys.left:
-                    self.direction = "left"
-                elif keys.right:
-                    self.vx = -PLAYER_SPEED
-                    self.vx = PLAYER_SPEED
-                    self.direction = "right"
+                    self.actor.image = self.animations[self.current_animation][self.attack_frame_index]
 
         # --- Física ---
         self.vy += GRAVITY
@@ -217,11 +219,11 @@ class Hero:
                     self.rect.top = plat.bottom
                     self.vy = 0
 
-        # --- Atualiza Actor ---
+        # Atualiza Actor
         self.actor.x = self.rect.centerx
         self.actor.y = self.rect.centery
 
-        # --- Atualiza animação normal ---
+        # Atualiza animação normal
         self.frame_timer += 1
         if self.frame_timer >= 10 and not self.attacking:
             self.frame_timer = 0

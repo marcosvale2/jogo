@@ -8,7 +8,6 @@ from level_data import platforms as level_platforms, enemies as level_enemies
 from config import WIDTH, HEIGHT
 from pygame import Rect
 
-
 # --- Game class ---
 class Game:
     def __init__(self):
@@ -89,6 +88,9 @@ class Game:
             self.menu.update()
             return
 
+        if self.state == "GAME_OVER":
+            return
+
         player_was_alive = self.player.lives > 0
         self.player.update(self.platforms, keys)
 
@@ -113,14 +115,18 @@ class Game:
 
         self.enemies = [e for e in self.enemies if not getattr(e, "kill", False)]
 
-        if self.player.rect.top > HEIGHT + 100:
+        # --- Game Over se cair ou perder todas as vidas ---
+        if self.player.rect.top > HEIGHT + 100 or self.player.lives <= 0:
             if not self.death_played:
                 try:
                     sounds.death.play()
                 except:
                     pass
                 self.death_played = True
-            self.state = "MENU"
+            if self.music_playing:
+                music.stop()
+                self.music_playing = False
+            self.state = "GAME_OVER"
 
         self.camera_x = self.player.rect.centerx - WIDTH // 2
         self.camera_y = self.player.rect.centery - HEIGHT // 2
@@ -128,6 +134,12 @@ class Game:
     def draw(self, screen):
         if self.state == "MENU":
             self.menu.draw(screen)
+            return
+
+        if self.state == "GAME_OVER":
+            screen.draw.filled_rect(Rect(0,0,WIDTH,HEIGHT), (0,0,0))
+            screen.draw.text("GAME OVER", center=(WIDTH//2, HEIGHT//2 - 50), fontsize=80, color="red")
+            screen.draw.text("Clique para voltar ao menu", center=(WIDTH//2, HEIGHT//2 + 50), fontsize=40, color="white")
             return
 
         offset_x = -self.camera_x
@@ -141,9 +153,7 @@ class Game:
             rect = plat_data["rect"]
             texture_name = plat_data["texture"]
             try:
-                # largura de cada bloco de textura
                 texture_width = 50
-                # repetir a textura ao longo da plataforma
                 for x in range(rect.x, rect.x + rect.width, texture_width):
                     screen.blit(texture_name, (x + offset_x, rect.y + offset_y))
             except:
@@ -167,6 +177,8 @@ class Game:
                 quit()
             elif action == "music_toggle":
                 self.toggle_music()
+        elif self.state == "GAME_OVER":
+            self.state = "MENU"
 
 # --- Init game ---
 game = Game()
