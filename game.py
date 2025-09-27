@@ -6,9 +6,8 @@ from enemy import Enemy
 from menu import Menu
 from level_data import platforms as level_platforms, enemies as level_enemies
 from config import WIDTH, HEIGHT
-from pygame import Rect
+from pygame import Rect, transform
 
-# --- Game class ---
 class Game:
     def __init__(self):
         self.state = "MENU"
@@ -22,12 +21,10 @@ class Game:
         self.death_played = False
 
     def draw_background(self, screen):
-        """Desenha o fundo contínuo pelo mapa todo"""
         try:
             img_width, img_height = images.background.get_size()
             start_x = -self.camera_x % img_width - img_width
             start_y = -self.camera_y % img_height - img_height
-
             x = start_x
             while x < WIDTH:
                 y = start_y
@@ -43,9 +40,6 @@ class Game:
         self.platforms = [plat.copy() for plat in level_platforms]
         self.enemies = [Enemy(e["pos"], e["patrol"], e.get("speed", 2)) for e in level_enemies]
         self.death_played = False
-
-        if not self.platforms:
-            return
 
         floor_rect = self.platforms[0]["rect"]
         self.player = Hero((150, floor_rect.top - 50))
@@ -63,13 +57,14 @@ class Game:
         self.camera_x = 0
         self.camera_y = 0
 
-        if not self.music_playing:
-            try:
-                music.play("background")
-                music.set_volume(0.5)
-                self.music_playing = True
-            except:
-                print("Erro: música de fundo não encontrada na pasta sounds!")
+        # Tocar música sempre que iniciar o jogo
+        try:
+            music.stop()
+            music.play("background")
+            music.set_volume(0.5)
+            self.music_playing = True
+        except:
+            print("Erro: música de fundo não encontrada!")
 
     def toggle_music(self):
         if self.music_playing:
@@ -81,14 +76,11 @@ class Game:
                 music.set_volume(0.5)
                 self.music_playing = True
             except:
-                print("Erro: música de fundo não encontrada na pasta sounds!")
+                print("Erro: música de fundo não encontrada!")
 
     def update(self, keys):
         if self.state == "MENU":
             self.menu.update()
-            return
-
-        if self.state == "GAME_OVER":
             return
 
         player_was_alive = self.player.lives > 0
@@ -112,20 +104,19 @@ class Game:
                             sounds.death.play()
                         except:
                             pass
+                        music.stop()
+                        self.state = "GAME_OVER"
 
         self.enemies = [e for e in self.enemies if not getattr(e, "kill", False)]
 
-        # --- Game Over se cair ou perder todas as vidas ---
-        if self.player.rect.top > HEIGHT + 100 or self.player.lives <= 0:
+        if self.player.rect.top > HEIGHT + 100:
             if not self.death_played:
                 try:
                     sounds.death.play()
                 except:
                     pass
-                self.death_played = True
-            if self.music_playing:
                 music.stop()
-                self.music_playing = False
+                self.death_played = True
             self.state = "GAME_OVER"
 
         self.camera_x = self.player.rect.centerx - WIDTH // 2
@@ -137,9 +128,10 @@ class Game:
             return
 
         if self.state == "GAME_OVER":
-            screen.draw.filled_rect(Rect(0,0,WIDTH,HEIGHT), (0,0,0))
-            screen.draw.text("GAME OVER", center=(WIDTH//2, HEIGHT//2 - 50), fontsize=80, color="red")
-            screen.draw.text("Clique para voltar ao menu", center=(WIDTH//2, HEIGHT//2 + 50), fontsize=40, color="white")
+            # Fundo preto
+            screen.draw.filled_rect(Rect(0, 0, WIDTH, HEIGHT), "black")
+            screen.draw.text("GAME OVER", center=(WIDTH//2, HEIGHT//2), fontsize=80, color="red")
+            screen.draw.text("Clique para voltar ao menu", center=(WIDTH//2, HEIGHT//2 + 100), fontsize=40, color="white")
             return
 
         offset_x = -self.camera_x
@@ -148,7 +140,7 @@ class Game:
         # --- Fundo contínuo ---
         self.draw_background(screen)
 
-        # --- Plataformas com texturas repetidas ---
+        # --- Plataformas ---
         for plat_data in self.platforms:
             rect = plat_data["rect"]
             texture_name = plat_data["texture"]
@@ -159,9 +151,11 @@ class Game:
             except:
                 screen.draw.filled_rect(Rect(rect.x + offset_x, rect.y + offset_y, rect.width, rect.height), "gray")
 
-        # --- Vidas ---
+        # --- Vidas com corações ---
+        heart_size = 50
+        heart_img = transform.scale(images.heart, (heart_size, heart_size))
         for i in range(self.player.lives):
-            screen.draw.filled_rect(Rect(10 + i*35, 10, 30, 30), "red")
+            screen.surface.blit(heart_img, (10 + i*(heart_size + 5), 10))
 
         # --- Herói e inimigos ---
         self.player.draw(offset_x, offset_y)
@@ -175,6 +169,8 @@ class Game:
                 self.start_game()
             elif action == "exit":
                 quit()
+            elif action == "settings":
+               self.menu.show_controls = True  
             elif action == "music_toggle":
                 self.toggle_music()
         elif self.state == "GAME_OVER":
