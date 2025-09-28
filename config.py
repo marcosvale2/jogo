@@ -1,4 +1,3 @@
-# config.py
 WIDTH = 800
 HEIGHT = 600
 TITLE = "My Awesome Game"

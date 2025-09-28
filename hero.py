@@ -1,7 +1,6 @@
 from pgzero.actor import Actor
 from pygame import Rect
 from config import GRAVITY, PLAYER_SPEED, JUMP_STRENGTH, INVINCIBILITY_TIME
-import time
 
 class Hero:
     def __init__(self, start_pos):
@@ -38,8 +37,10 @@ class Hero:
         self.invincible_timer = 0
         self.state = "normal"  # normal, transform, turbo
         self.direction = "right"
-        self.turbo_start = 0
-        self.turbo_duration = 3.0
+        # Turbo control usando frames
+        self.turbo_frame_counter = 0
+        self.turbo_duration_seconds = 3.0
+        self.turbo_duration_frames = int(self.turbo_duration_seconds * 60)
         self.idle_timer = 0
         self.idle_delay = 3.0
         self.pre_idle_played = False
@@ -66,6 +67,9 @@ class Hero:
             self.actor.image = self.animations[name][0]
 
     def update(self, platforms, keys):
+        # incrementa counters de frames que controlam tempo
+        self.turbo_frame_counter += 1
+
         # --- Transform ---
         if self.state == "transform":
             self.vx = 0
@@ -76,7 +80,7 @@ class Hero:
                 self.frame_index += 1
                 if self.frame_index >= len(self.animations[self.current_animation]):
                     self.state = "turbo"
-                    self.turbo_start = time.time()
+                    self.turbo_frame_counter = 0
                     self.set_animation(f"idle_turbo_{self.direction}")
                 else:
                     self.actor.image = self.animations[self.current_animation][self.frame_index]
@@ -85,7 +89,7 @@ class Hero:
         # --- Turbo ---
         elif self.state == "turbo":
             self.invincible_timer = 10
-            if time.time() - self.turbo_start > self.turbo_duration:
+            if self.turbo_frame_counter > self.turbo_duration_frames:
                 self.state = "normal"
                 self.set_animation("idle")
 

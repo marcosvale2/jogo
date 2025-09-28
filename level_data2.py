@@ -2,7 +2,7 @@ from pygame import Rect
 
 # --- Textures ---
 ground_textures_anim = ["ground/floor_bw_d1", "ground/floor_bw_d2", "ground/floor_bw_d3", "ground/floor_bw_d4", "ground/floor_bw_d5"]
-ground_texture_fixed = "ground/floor_bwg_d"  # textura padrão para chão e plataformas encostadas
+ground_texture_fixed = "ground/floor_bwg_d"
 vertical_textures = ["ground/floor_bw_dd", "ground/floor_bw_dd2", "ground/floor_bw_dd3", "ground/floor_bw_dd4"]
 
 platforms = []
@@ -15,14 +15,10 @@ def add_ground_block(x, y, width=50, height=50, animated=False):
         texture = ground_texture_fixed
     return {"rect": Rect(x, y, width, height), "texture": texture}
 
-# =====================
-# AREA 1 – INICIO LEVEL 2
-# =====================
-# Chão principal
+# AREA 1 — INÍCIO LEVEL 2
 for x in range(2000, 2800, 50):
     platforms.append(add_ground_block(x, 550, 50, 50, animated=False))
 
-# Plataformas soltas
 platforms += [
     add_ground_block(2100, 450, 150, 20, animated=True),
     add_ground_block(2300, 400, 150, 20, animated=True),
@@ -30,22 +26,6 @@ platforms += [
     add_ground_block(2700, 300, 200, 20, animated=True),
 ]
 
-# =====================
-# AREA 2 – CAVERNA LEVEL 2
-# =====================
-for x in range(3000, 3600, 50):
-    platforms.append(add_ground_block(x, 550, 50, 50, animated=False))  # chão
-
-# Plataformas da caverna
-platforms += [
-    add_ground_block(3100, 450, 150, 20, animated=True),
-    add_ground_block(3300, 400, 150, 20, animated=True),
-    add_ground_block(3500, 350, 150, 20, animated=True),
-]
-
-# =====================
-# INIMIGOS LEVEL 2
-# =====================
 enemies = [
     {"pos": (2100, 0), "patrol": (2100, 2250), "speed": 2.0},
     {"pos": (2300, 0), "patrol": (2300, 2450), "speed": 1.8},
@@ -53,13 +33,10 @@ enemies = [
     {"pos": (3300, 0), "patrol": (3300, 3450), "speed": 1.2},
 ]
 
-# =====================
-# VERTICAL LAYERS DO CHÃO
-# =====================
+# vertical layers
 block_width = 80
 layer_height = 50
 ground_blocks = [b for b in platforms if b["rect"].y == 550]
-
 for block in ground_blocks:
     x_start = block["rect"].x
     for layer_index, texture in enumerate(vertical_textures):

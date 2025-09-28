@@ -51,17 +51,19 @@ platforms += [
     add_ground_block(1700, 650, 150, 20, animated=True),
 ]
 
-# --- Portal para LevelData2 ---
-platforms.append({
-    "rect": Rect(2000, 500, 150, 20),
-    "texture": "ground/floor_bwg_d",
-    "destination": "level2"
-})
-
 enemies += [
     {"pos": (1200, 0), "patrol": (1100, 1300), "speed": 1.2},
     {"pos": (1600, 0), "patrol": (1500, 1700), "speed": 1.5},
 ]
+
+# =====================
+# PORTAL LEVEL 1 → LEVEL 2 (coletora / ativador)
+# =====================
+platforms.append({
+    "rect": Rect(2000, 500, 150, 20),
+    "texture": "ground/floor_bwg_d",  # textura válida para não quebrar draw
+    "destination": "level2"
+})
 
 # =====================
 # VERTICAL LAYERS DO CHÃO

@@ -1,17 +1,21 @@
 import pgzrun
-import time
+from pgzero import clock
 from hero import Hero
 from enemy import Enemy
 from menu import Menu
 from level_data import platforms as level_platforms, enemies as level_enemies
+import level_data2
 from config import WIDTH, HEIGHT
-from pygame import Rect, transform
+from pygame import Rect
 
 class AudioZone:
     def __init__(self, rect, sound_name):
         self.rect = rect
         self.sound_name = sound_name
-        self.played = False
+        self.activated = False
+        self.playing = False
+        self.started_at = 0
+        self.duration = 3.0  # fallback duration
 
 class Game:
     def __init__(self):
@@ -25,10 +29,6 @@ class Game:
         self.music_playing = False
         self.death_played = False
 
-        # --- Portal ---
-        self.portal_rect = Rect(2000, 500, 150, 20)
-
-        # --- Audio Zone sobre o portal ---
         self.audio_zone = AudioZone(Rect(2000, 480, 150, 40), "fim")
 
     def draw_background(self, screen):
@@ -51,6 +51,7 @@ class Game:
         self.platforms = [plat.copy() for plat in level_platforms]
         self.enemies = [Enemy(e["pos"], e["patrol"], e.get("speed", 2)) for e in level_enemies]
         self.death_played = False
+        self.menu.show_thank_you = False
 
         floor_rect = self.platforms[0]["rect"]
         self.player = Hero((150, floor_rect.top - 50))
@@ -68,7 +69,6 @@ class Game:
         self.camera_x = 0
         self.camera_y = 0
 
-        # Música de fundo
         try:
             music.stop()
             music.play("background")
@@ -89,7 +89,22 @@ class Game:
             except:
                 print("Erro: música de fundo não encontrada!")
 
+    def load_level2(self):
+        self.platforms = [plat.copy() for plat in level_data2.platforms]
+        self.enemies = [Enemy(e["pos"], e["patrol"], e.get("speed", 2)) for e in level_data2.enemies]
+        floor_rect = self.platforms[0]["rect"]
+        self.player.rect.bottom = floor_rect.top
+        self.player.rect.x = floor_rect.x + 50
+        self.player.vx = 0
+        self.player.vy = 0
+        self.camera_x = 0
+        self.camera_y = 0
+
     def update(self, keys):
+        # se estiver na tela de agradecimento, não atualiza nada
+        if self.menu.show_thank_you:
+            return
+
         if self.state == "MENU":
             self.menu.update()
             return
@@ -100,22 +115,18 @@ class Game:
         for enemy in self.enemies:
             enemy.update(self.platforms, self.enemies)
 
-        # Colisão com inimigos
+        # collision
         for enemy in self.enemies:
             if self.player.rect.colliderect(enemy.rect):
                 if self.player.attacking:
                     enemy.take_hit(self.player.direction)
-                    try:
-                        sounds.attack.play()
-                    except:
-                        pass
+                    try: sounds.attack.play()
+                    except: pass
                 elif self.player.invincible_timer <= 0:
                     self.player.take_damage()
                     if self.player.lives <= 0 and player_was_alive:
-                        try:
-                            sounds.death.play()
-                        except:
-                            pass
+                        try: sounds.death.play()
+                        except: pass
                         music.stop()
                         self.state = "GAME_OVER"
 
@@ -123,41 +134,40 @@ class Game:
 
         if self.player.rect.top > HEIGHT + 100:
             if not self.death_played:
-                try:
-                    sounds.death.play()
-                except:
-                    pass
+                try: sounds.death.play()
+                except: pass
                 music.stop()
                 self.death_played = True
             self.state = "GAME_OVER"
 
-        # --- Portal: teleportar para level 2 ---
-        if self.player.rect.colliderect(self.portal_rect):
-            self.player.rect.x = 1300  # posição inicial no mapa 2
-            self.player.rect.y = 500
-            self.camera_x = self.player.rect.centerx - WIDTH // 2
-            self.camera_y = self.player.rect.centery - HEIGHT // 2
+        # Portal detection
+        for plat_data in self.platforms:
+            if plat_data.get("destination") and self.player.rect.colliderect(plat_data["rect"]):
+                if plat_data["destination"] == "level2":
+                    self.load_level2()
+                    break
 
-        # --- Audio Zone ---
-        if self.player.rect.colliderect(self.audio_zone.rect) and not self.audio_zone.played:
-            self.audio_zone.played = True
+        # Audio zone activation
+        if not self.audio_zone.activated and self.player.rect.colliderect(self.audio_zone.rect):
+            self.audio_zone.activated = True
+            self.audio_zone.playing = True
+            self.audio_zone.started_at = 0
             if self.music_playing:
                 music.stop()
                 self.music_playing = False
             try:
                 sounds.fim.play()
+                self.audio_zone.duration = sounds.fim.get_length()
             except:
-                print("Erro: arquivo fim.wav não encontrado!")
+                self.audio_zone.duration = 3.0
 
-        # Retorna música após áudio terminar
-        if self.audio_zone.played:
-            if not sounds.fim and not self.music_playing:
-                try:
-                    music.play("background")
-                    music.set_volume(0.5)
-                    self.music_playing = True
-                except:
-                    pass
+        # Audio timer check
+        if self.audio_zone.playing:
+            self.audio_zone.started_at += 1/60
+            if self.audio_zone.started_at >= self.audio_zone.duration:
+                self.audio_zone.playing = False
+                self.state = "MENU"
+                self.menu.show_thank_you_message()  # chama tela de agradecimento e fecha o jogo em 5s
 
         self.camera_x = self.player.rect.centerx - WIDTH // 2
         self.camera_y = self.player.rect.centery - HEIGHT // 2
@@ -178,26 +188,29 @@ class Game:
 
         self.draw_background(screen)
 
-        # --- Plataformas ---
+        # draw platforms
         for plat_data in self.platforms:
             rect = plat_data["rect"]
             texture_name = plat_data["texture"]
             try:
-                texture_width = 50
-                for x in range(rect.x, rect.x + rect.width, texture_width):
+                for x in range(rect.x, rect.x + rect.width, 50):
                     screen.blit(texture_name, (x + offset_x, rect.y + offset_y))
             except:
                 screen.draw.filled_rect(Rect(rect.x + offset_x, rect.y + offset_y, rect.width, rect.height), "gray")
 
-        # --- Portal visual ---
-        screen.draw.filled_rect(Rect(self.portal_rect.x + offset_x, self.portal_rect.y + offset_y,
-                                     self.portal_rect.width, self.portal_rect.height), (255, 0, 255))  # roxo
+        # portal visual
+        for plat in self.platforms:
+            if plat.get("destination"):
+                screen.draw.filled_rect(Rect(plat["rect"].x + offset_x, plat["rect"].y + offset_y,
+                                             plat["rect"].width, plat["rect"].height), (255, 0, 255))
 
-        # --- Vidas ---
-        heart_size = 50
-        heart_img = transform.scale(images.heart, (heart_size, heart_size))
+        # hearts
+        heart_spacing = 50
         for i in range(self.player.lives):
-            screen.surface.blit(heart_img, (10 + i*(heart_size + 5), 10))
+            try:
+                screen.surface.blit(images.heart, (10 + i * heart_spacing, 10))
+            except:
+                screen.draw.filled_rect(Rect(10 + i * heart_spacing, 10, 50, 50), "red")
 
         self.player.draw(offset_x, offset_y)
         for enemy in self.enemies:
@@ -210,23 +223,15 @@ class Game:
                 self.start_game()
             elif action == "exit":
                 quit()
-            elif action == "settings":
-                self.menu.show_controls = True
             elif action == "music_toggle":
                 self.toggle_music()
         elif self.state == "GAME_OVER":
             self.state = "MENU"
 
-# --- Init game ---
 game = Game()
 
-def draw():
-    game.draw(screen)
-
-def update():
-    game.update(keyboard)
-
-def on_mouse_down(pos):
-    game.on_mouse_down(pos)
+def draw(): game.draw(screen)
+def update(): game.update(keyboard)
+def on_mouse_down(pos): game.on_mouse_down(pos)
 
 pgzrun.go()
