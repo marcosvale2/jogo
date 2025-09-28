@@ -1,4 +1,3 @@
-# game.py
 import pgzrun
 import time
 from hero import Hero
@@ -7,6 +6,12 @@ from menu import Menu
 from level_data import platforms as level_platforms, enemies as level_enemies
 from config import WIDTH, HEIGHT
 from pygame import Rect, transform
+
+class AudioZone:
+    def __init__(self, rect, sound_name):
+        self.rect = rect
+        self.sound_name = sound_name
+        self.played = False
 
 class Game:
     def __init__(self):
@@ -19,6 +24,12 @@ class Game:
         self.camera_y = 0
         self.music_playing = False
         self.death_played = False
+
+        # --- Portal ---
+        self.portal_rect = Rect(2000, 500, 150, 20)
+
+        # --- Audio Zone sobre o portal ---
+        self.audio_zone = AudioZone(Rect(2000, 480, 150, 40), "fim")
 
     def draw_background(self, screen):
         try:
@@ -57,7 +68,7 @@ class Game:
         self.camera_x = 0
         self.camera_y = 0
 
-        # Tocar música sempre que iniciar o jogo
+        # Música de fundo
         try:
             music.stop()
             music.play("background")
@@ -89,6 +100,7 @@ class Game:
         for enemy in self.enemies:
             enemy.update(self.platforms, self.enemies)
 
+        # Colisão com inimigos
         for enemy in self.enemies:
             if self.player.rect.colliderect(enemy.rect):
                 if self.player.attacking:
@@ -119,6 +131,34 @@ class Game:
                 self.death_played = True
             self.state = "GAME_OVER"
 
+        # --- Portal: teleportar para level 2 ---
+        if self.player.rect.colliderect(self.portal_rect):
+            self.player.rect.x = 1300  # posição inicial no mapa 2
+            self.player.rect.y = 500
+            self.camera_x = self.player.rect.centerx - WIDTH // 2
+            self.camera_y = self.player.rect.centery - HEIGHT // 2
+
+        # --- Audio Zone ---
+        if self.player.rect.colliderect(self.audio_zone.rect) and not self.audio_zone.played:
+            self.audio_zone.played = True
+            if self.music_playing:
+                music.stop()
+                self.music_playing = False
+            try:
+                sounds.fim.play()
+            except:
+                print("Erro: arquivo fim.wav não encontrado!")
+
+        # Retorna música após áudio terminar
+        if self.audio_zone.played:
+            if not sounds.fim and not self.music_playing:
+                try:
+                    music.play("background")
+                    music.set_volume(0.5)
+                    self.music_playing = True
+                except:
+                    pass
+
         self.camera_x = self.player.rect.centerx - WIDTH // 2
         self.camera_y = self.player.rect.centery - HEIGHT // 2
 
@@ -128,7 +168,6 @@ class Game:
             return
 
         if self.state == "GAME_OVER":
-            # Fundo preto
             screen.draw.filled_rect(Rect(0, 0, WIDTH, HEIGHT), "black")
             screen.draw.text("GAME OVER", center=(WIDTH//2, HEIGHT//2), fontsize=80, color="red")
             screen.draw.text("Clique para voltar ao menu", center=(WIDTH//2, HEIGHT//2 + 100), fontsize=40, color="white")
@@ -137,7 +176,6 @@ class Game:
         offset_x = -self.camera_x
         offset_y = -self.camera_y
 
-        # --- Fundo contínuo ---
         self.draw_background(screen)
 
         # --- Plataformas ---
@@ -151,13 +189,16 @@ class Game:
             except:
                 screen.draw.filled_rect(Rect(rect.x + offset_x, rect.y + offset_y, rect.width, rect.height), "gray")
 
-        # --- Vidas com corações ---
+        # --- Portal visual ---
+        screen.draw.filled_rect(Rect(self.portal_rect.x + offset_x, self.portal_rect.y + offset_y,
+                                     self.portal_rect.width, self.portal_rect.height), (255, 0, 255))  # roxo
+
+        # --- Vidas ---
         heart_size = 50
         heart_img = transform.scale(images.heart, (heart_size, heart_size))
         for i in range(self.player.lives):
             screen.surface.blit(heart_img, (10 + i*(heart_size + 5), 10))
 
-        # --- Herói e inimigos ---
         self.player.draw(offset_x, offset_y)
         for enemy in self.enemies:
             enemy.draw(offset_x, offset_y)
@@ -170,7 +211,7 @@ class Game:
             elif action == "exit":
                 quit()
             elif action == "settings":
-               self.menu.show_controls = True  
+                self.menu.show_controls = True
             elif action == "music_toggle":
                 self.toggle_music()
         elif self.state == "GAME_OVER":

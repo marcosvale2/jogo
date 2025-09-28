@@ -46,76 +46,21 @@ for x in range(1000, 2000, 50):
     platforms.append(add_ground_block(x, 700, 50, 50, animated=False))
 
 platforms += [
-    add_ground_block(1100, 650, 150, 20, animated=True),
+    add_ground_block(1100, 600, 150, 20, animated=True),
     add_ground_block(1400, 600, 150, 20, animated=True),
     add_ground_block(1700, 650, 150, 20, animated=True),
 ]
 
+# --- Portal para LevelData2 ---
+platforms.append({
+    "rect": Rect(2000, 500, 150, 20),
+    "texture": "ground/floor_bwg_d",
+    "destination": "level2"
+})
+
 enemies += [
     {"pos": (1200, 0), "patrol": (1100, 1300), "speed": 1.2},
     {"pos": (1600, 0), "patrol": (1500, 1700), "speed": 1.5},
-]
-
-# =====================
-# AREA 3 – TOWER
-# =====================
-for x in range(2100, 2500, 50):
-    platforms.append(add_ground_block(x, 550, 50, 50, animated=False))  # chão base
-
-# Plataformas laterais soltas
-platforms += [
-    add_ground_block(2200, 500, 100, 20, animated=True),
-    add_ground_block(2300, 450, 100, 20, animated=True),
-    add_ground_block(2400, 400, 100, 20, animated=True),
-    add_ground_block(2300, 350, 100, 20, animated=True),
-    add_ground_block(2200, 300, 100, 20, animated=True),
-    add_ground_block(2100, 250, 100, 20, animated=True),
-]
-
-# Topo da torre
-for x in range(2000, 2600, 50):
-    platforms.append(add_ground_block(x, 200, 50, 50, animated=False))
-
-enemies.append({"pos": (2300, 0), "patrol": (2100, 2500), "speed": 2.5})
-
-# =====================
-# AREA 4 – PLAIN
-# =====================
-for x in range(2700, 3700, 50):
-    platforms.append(add_ground_block(x, 550, 50, 50, animated=False))  # chão
-
-# Obstáculos soltos
-platforms += [
-    add_ground_block(2800, 500, 100, 20, animated=True),
-    add_ground_block(3100, 450, 100, 20, animated=True),
-    add_ground_block(3400, 500, 100, 20, animated=True),
-]
-
-enemies += [
-    {"pos": (2900, 0), "patrol": (2800, 3000), "speed": 2.2},
-    {"pos": (3200, 0), "patrol": (3100, 3300), "speed": 2.0},
-]
-
-# =====================
-# AREA 5 – MOUNTAIN
-# =====================
-for x in range(3800, 4500, 50):
-    y = 550 - ((x - 3800) // 50) * 25
-    platforms.append(add_ground_block(x, y, 50, 50, animated=False))  # subida montanha
-
-# Topo da montanha
-for x in range(4500, 5200, 50):
-    platforms.append(add_ground_block(x, 200, 50, 50, animated=False))
-
-# Plataformas suspensas soltas
-platforms += [
-    add_ground_block(4700, 150, 150, 20, animated=True),
-    add_ground_block(5000, 100, 150, 20, animated=True),
-]
-
-enemies += [
-    {"pos": (4800, 0), "patrol": (4700, 5000), "speed": 2.0},
-    {"pos": (5050, 0), "patrol": (5000, 5200), "speed": 1.8},
 ]
 
 # =====================
