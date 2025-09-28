@@ -19,6 +19,9 @@ class AudioZone:
 
 class Game:
     def __init__(self):
+        # Botão de música durante o jogo
+        self.music_button_actor = Actor("music_icon", pos=(WIDTH - 50, 50))
+        self.music_hitbox_in_game = Rect(WIDTH - 75, 25, 50, 50)
         self.state = "MENU"
         self.menu = Menu()
         self.player = None
@@ -182,7 +185,10 @@ class Game:
             screen.draw.text("GAME OVER", center=(WIDTH//2, HEIGHT//2), fontsize=80, color="red")
             screen.draw.text("Clique para voltar ao menu", center=(WIDTH//2, HEIGHT//2 + 100), fontsize=40, color="white")
             return
-
+        if self.music_playing:
+          self.music_button_actor.image = "music_icon"
+        else:
+          self.music_button_actor.image = "music_off"
         offset_x = -self.camera_x
         offset_y = -self.camera_y
 
@@ -203,7 +209,7 @@ class Game:
             if plat.get("destination"):
                 screen.draw.filled_rect(Rect(plat["rect"].x + offset_x, plat["rect"].y + offset_y,
                                              plat["rect"].width, plat["rect"].height), (255, 0, 255))
-
+        
         # hearts
         heart_spacing = 50
         for i in range(self.player.lives):
@@ -215,22 +221,30 @@ class Game:
         self.player.draw(offset_x, offset_y)
         for enemy in self.enemies:
             enemy.draw(offset_x, offset_y)
+       # Desenha botão de música durante o jogo
+        self.music_button_actor.draw()
 
     def on_mouse_down(self, pos):
-        if self.state == "MENU":
-            action = self.menu.check_click(pos)
-            if action == "start":
-                self.start_game()
-            elif action == "exit":
-                quit()
-            elif action == "music_toggle":
-                self.toggle_music()
-                self.toggle_music()
-            elif action == "settings":           # <-- ADICIONADO
-                self.menu.show_controls = True
-        elif self.state == "GAME_OVER":
-            self.state = "MENU"
+     if self.state == "MENU":
+        action = self.menu.check_click(pos)
+        if action == "start":
+            self.start_game()
+        elif action == "exit":
+            quit()
+        elif action == "music_toggle":
+            self.toggle_music()  # liga/desliga música
+        elif action == "settings":
+            self.menu.show_controls = True
 
+     elif self.state == "GAME":
+        # Clique no botão de música durante o jogo
+        if self.music_hitbox_in_game.collidepoint(pos):
+            self.toggle_music()
+
+     elif self.state == "GAME_OVER":
+        self.state = "MENU"
+
+         
 game = Game()
 
 def draw(): game.draw(screen)
