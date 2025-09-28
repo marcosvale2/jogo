@@ -225,6 +225,9 @@ class Game:
                 quit()
             elif action == "music_toggle":
                 self.toggle_music()
+                self.toggle_music()
+            elif action == "settings":           # <-- ADICIONADO
+                self.menu.show_controls = True
         elif self.state == "GAME_OVER":
             self.state = "MENU"
 
