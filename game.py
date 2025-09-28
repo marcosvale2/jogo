@@ -75,7 +75,7 @@ class Game:
         try:
             music.stop()
             music.play("background")
-            music.set_volume(0.5)
+            music.set_volume(0.25)
             self.music_playing = True
         except:
             print("Erro: música de fundo não encontrada!")
@@ -87,7 +87,7 @@ class Game:
         else:
             try:
                 music.play("background")
-                music.set_volume(0.5)
+                music.set_volume(0.25)
                 self.music_playing = True
             except:
                 print("Erro: música de fundo não encontrada!")
