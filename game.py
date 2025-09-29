@@ -33,6 +33,9 @@ class Game:
         self.death_played = False
 
         self.audio_zone = AudioZone(Rect(2000, 480, 150, 40), "fim")
+        
+        # Contador de inimigos mortos
+        self.enemies_killed = 0
 
     def draw_background(self, screen):
         try:
@@ -55,9 +58,10 @@ class Game:
         self.enemies = [Enemy(e["pos"], e["patrol"], e.get("speed", 2)) for e in level_enemies]
         self.death_played = False
         self.menu.show_thank_you = False
+        self.enemies_killed = 0  # reset contador
 
         floor_rect = self.platforms[0]["rect"]
-        self.player = Hero((150, floor_rect.top - 50))
+        self.player = Hero((-4000, floor_rect.top - 50))
         self.player.lives = 5
         self.player.rect.bottom = floor_rect.top
 
@@ -133,6 +137,12 @@ class Game:
                         music.stop()
                         self.state = "GAME_OVER"
 
+        # Atualiza contador de inimigos mortos
+        for e in self.enemies:
+            if getattr(e, "kill", False):
+                self.enemies_killed += 1
+
+        # Remove inimigos mortos
         self.enemies = [e for e in self.enemies if not getattr(e, "kill", False)]
 
         if self.player.rect.top > HEIGHT + 100:
@@ -185,10 +195,12 @@ class Game:
             screen.draw.text("GAME OVER", center=(WIDTH//2, HEIGHT//2), fontsize=80, color="red")
             screen.draw.text("Clique para voltar ao menu", center=(WIDTH//2, HEIGHT//2 + 100), fontsize=40, color="white")
             return
+
         if self.music_playing:
-          self.music_button_actor.image = "music_icon"
+            self.music_button_actor.image = "music_icon"
         else:
-          self.music_button_actor.image = "music_off"
+            self.music_button_actor.image = "music_off"
+
         offset_x = -self.camera_x
         offset_y = -self.camera_y
 
@@ -218,31 +230,35 @@ class Game:
             except:
                 screen.draw.filled_rect(Rect(10 + i * heart_spacing, 10, 50, 50), "red")
 
+        # --- CONTADOR DE INIMIGOS MORTOS ---
+        screen.draw.text(f"Inimigos mortos: {self.enemies_killed}", topleft=(10, 70), fontsize=40, color="white")
+
         self.player.draw(offset_x, offset_y)
         for enemy in self.enemies:
             enemy.draw(offset_x, offset_y)
-       # Desenha botão de música durante o jogo
+
+        # Desenha botão de música durante o jogo
         self.music_button_actor.draw()
 
     def on_mouse_down(self, pos):
-     if self.state == "MENU":
-        action = self.menu.check_click(pos)
-        if action == "start":
-            self.start_game()
-        elif action == "exit":
-            quit()
-        elif action == "music_toggle":
-            self.toggle_music()  # liga/desliga música
-        elif action == "settings":
-            self.menu.show_controls = True
+        if self.state == "MENU":
+            action = self.menu.check_click(pos)
+            if action == "start":
+                self.start_game()
+            elif action == "exit":
+                quit()
+            elif action == "music_toggle":
+                self.toggle_music()  # liga/desliga música
+            elif action == "settings":
+                self.menu.show_controls = True
 
-     elif self.state == "GAME":
-        # Clique no botão de música durante o jogo
-        if self.music_hitbox_in_game.collidepoint(pos):
-            self.toggle_music()
+        elif self.state == "GAME":
+            # Clique no botão de música durante o jogo
+            if self.music_hitbox_in_game.collidepoint(pos):
+                self.toggle_music()
 
-     elif self.state == "GAME_OVER":
-        self.state = "MENU"
+        elif self.state == "GAME_OVER":
+            self.state = "MENU"
 
          
 game = Game()
